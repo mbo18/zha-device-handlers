@@ -4,6 +4,7 @@ from typing import Dict
 from zigpy.profiles import zha
 from zigpy.quirks import CustomDevice
 import zigpy.types as t
+from zigpy.zcl import foundation
 from zigpy.zcl.clusters.general import Basic, Groups, Identify, OnOff, Ota, Scenes, Time
 from zigpy.zcl.clusters.smartenergy import Metering
 
@@ -20,7 +21,6 @@ from zhaquirks.tuya import TuyaLocalCluster
 from zhaquirks.tuya.mcu import (
     DPToAttributeMapping,
     EnchantedDevice,
-    TuyaAttributesCluster,
     TuyaDPType,
     TuyaMCUCluster,
     TuyaOnOff,
@@ -258,25 +258,33 @@ class ParksidePSBZS(EnchantedDevice):
         },
     }
 
-    
+
 # info from https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/giex.js
-GIEX_TUYA_VALVE_MODE_ATTR = 0xEF01 # Mode [0] duration [1] capacity
-GIEX_TUYA_VALVE_START_TIME_ATTR = 0xEF65 # Last irrigation start time (GMT)
-GIEX_TUYA_VALVE_END_TIME_ATTR = 0xEF66 # Last irrigation end time (GMT)
-GIEX_TUYA_VALVE_NUM_TIMES_ATTR = 0xEF67 # Number of cycle irrigation times, set to 0 for single cycle, min=0 max=100
-GIEX_TUYA_VALVE_TARGET_ATTR = 0xEF68 # Irrigation target, duration in seconds or capacity in litres (depending on mode), min=0, max=3600
-GIEX_TUYA_VALVE_INTERVAL_ATTR = 0xEF69 # Cycle irrigation interval in seconds, min=0, max=3600
-GIEX_TUYA_VALVE_DURATION_ATTR = 0xEF72 # Last irrigation duration
+GIEX_TUYA_VALVE_MODE_ATTR = 0xEF01  # Mode [0] duration [1] capacity
+GIEX_TUYA_VALVE_START_TIME_ATTR = 0xEF65  # Last irrigation start time (GMT)
+GIEX_TUYA_VALVE_END_TIME_ATTR = 0xEF66  # Last irrigation end time (GMT)
+GIEX_TUYA_VALVE_NUM_TIMES_ATTR = (
+    0xEF67  # Number of cycle irrigation times, set to 0 for single cycle, min=0 max=100
+)
+GIEX_TUYA_VALVE_TARGET_ATTR = 0xEF68  # Irrigation target, duration in seconds or capacity in litres (depending on mode), min=0, max=3600
+GIEX_TUYA_VALVE_INTERVAL_ATTR = (
+    0xEF69  # Cycle irrigation interval in seconds, min=0, max=3600
+)
+GIEX_TUYA_VALVE_DURATION_ATTR = 0xEF72  # Last irrigation duration
 
 
 class GiexTuyaValveManufCluster(TuyaMCUCluster):
     """GiEX Tuya valve manufacturer cluster."""
-    
+
     attributes = TuyaMCUCluster.attributes.copy()
     attributes.update(
         {
             GIEX_TUYA_VALVE_MODE_ATTR: ("irrigation_mode", t.Bool, True),
-            GIEX_TUYA_VALVE_START_TIME_ATTR: ("irrigation_start_time", t.uint32_t, True),
+            GIEX_TUYA_VALVE_START_TIME_ATTR: (
+                "irrigation_start_time",
+                t.uint32_t,
+                True,
+            ),
             GIEX_TUYA_VALVE_END_TIME_ATTR: ("irrigation_end_time", t.uint32_t, True),
             GIEX_TUYA_VALVE_NUM_TIMES_ATTR: ("irrigation_num_times", t.uint32_t, True),
             GIEX_TUYA_VALVE_TARGET_ATTR: ("irrigation_target", t.uint32_t, True),
@@ -363,10 +371,7 @@ class GiexTuyaValve(CustomDevice):
     """Tuya valve device."""
 
     signature = {
-        MODELS_INFO: [
-            ("_TZE200_sh1btabb", "TS0601"),
-            ("_TZE200_a7sghmms", "TS0601")
-        ],
+        MODELS_INFO: [("_TZE200_sh1btabb", "TS0601"), ("_TZE200_a7sghmms", "TS0601")],
         ENDPOINTS: {
             # <SimpleDescriptor endpoint=1 profile=260 device_type=0x0051
             # input_clusters=[0x0000, 0x0004, 0x0005, 0xef00]
@@ -402,4 +407,3 @@ class GiexTuyaValve(CustomDevice):
             }
         }
     }
- 
